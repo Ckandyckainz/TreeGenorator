@@ -11,6 +11,8 @@ class TreeData{
         this.tiers = randomBetween(3, 8, 1);
         this.growth = randomBetween(1, 4, 1);
         this.angleVary = randomBetween(Math.PI/8, Math.PI/2, 0.01);
+        this.branchThickness = randomBetween(3, 12, 1);
+        this.branchThicknessProportions = randomBetween(1, 2, 0.01);
     }
 }
 
@@ -40,6 +42,7 @@ function drawTree(treeData, ctx, w, h){
 
 function drawBranch(treeData, tier, angle, x, y, ctx, w, h){
     ctx.strokeStyle = treeData.branchColor;
+    ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**tier);
     ctx.beginPath();
     ctx.moveTo(x*w, y*h);
     ctx.lineTo((x+Math.cos(angle)/treeData.tiers/2)*w, (y+Math.sin(angle)/treeData.tiers/2)*h);
