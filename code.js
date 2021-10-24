@@ -15,7 +15,7 @@ class TreeData{
         this.branchThicknessProportions = randomBetween(1.5, 2, 0.01);
         this.branchBend = Math.random()*3-1.5;
         this.branchBendVary = Math.random();
-        this.branchWobble = 8;
+        this.branchWobble = Math.random()*8;
     }
 }
 
