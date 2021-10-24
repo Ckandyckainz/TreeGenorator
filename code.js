@@ -16,6 +16,8 @@ class TreeData{
         this.branchBend = Math.random()*3-1.5;
         this.branchBendVary = Math.random();
         this.branchWobble = Math.random()*8;
+        this.tierSmoothness = Math.random();
+        this.segmentExtend = randomBetween(5, 101, 1);
     }
 }
 
@@ -45,22 +47,24 @@ function drawTree(treeData, ctx, w, h){
 
 function drawBranch(treeData, tier, angle, targetAngle, x, y, ctx, w, h){
     ctx.strokeStyle = treeData.branchColor;
-    ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**tier);
-    ctx.beginPath();
-    ctx.moveTo(x*w, y*h);
     let xCounter = x;
     let yCounter = y;
     let currentAngle = angle;
     let lastWobble = 0;
     for (let i=0; i<10; i++) {
+        ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**(tier+i*treeData.tierSmoothness/10));
+        ctx.beginPath();
+        ctx.moveTo(xCounter*w, yCounter*h);
         let wobble = randomBetween(-1*treeData.branchWobble, treeData.branchWobble, 0.01);
         currentAngle += ((targetAngle-angle)+wobble-lastWobble)/10;
         lastWobble = wobble;
         xCounter += Math.cos(currentAngle)/treeData.tiers/20;
         yCounter += Math.sin(currentAngle)/treeData.tiers/20;
-        ctx.lineTo(xCounter*w, yCounter*h);
+        let xExtend = xCounter+Math.cos(currentAngle)/treeData.tiers/treeData.segmentExtend;
+        let yExtend = yCounter+Math.sin(currentAngle)/treeData.tiers/treeData.segmentExtend;
+        ctx.lineTo(xExtend*w, yExtend*h);
+        ctx.stroke();
     }
-    ctx.stroke();
     if (treeData.tiers > tier) {
         for (let i=0; i<randomBetween(treeData.growth-1, treeData.growth+1, 1); i++) {
             let newTargetAngle = randomBetween(currentAngle-treeData.angleVary, currentAngle+treeData.angleVary, 0.01);
