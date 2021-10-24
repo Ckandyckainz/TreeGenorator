@@ -17,6 +17,7 @@ class TreeData{
         this.branchWobble = Math.random()*8;
         this.tierSmoothness = Math.random();
         this.segmentExtend = randomBetween(5, 101, 1);
+        this.branchColorVary = Math.random()*0.8;
     }
 }
 
@@ -59,12 +60,15 @@ function drawBranch(treeData, tier, angle, targetAngle, x, y, ctx, w, h, trunkY,
     let z = (trunkY*5-1)/4;
     let a = 1.4-trunkY;
     let b = trunkY-0.4;
-    ctx.strokeStyle = colorString(treeData.branchColor[0]*z*a+light[0]*b, treeData.branchColor[1]*z*a+light[1]*b, treeData.branchColor[2]*z*a+light[2]*b, 1);
     let xCounter = x;
     let yCounter = y;
     let currentAngle = angle;
     let lastWobble = 0;
     for (let i=0; i<10; i++) {
+        let r0 = (treeData.branchColor[0]*z*a+light[0]*b)*(1-Math.random()*treeData.branchColorVary);
+        let g0 = treeData.branchColor[1]*z*a+light[1]*b*(1-Math.random()*treeData.branchColorVary);
+        let b0 = treeData.branchColor[2]*z*a+light[2]*b*(1-Math.random()*treeData.branchColorVary);
+        ctx.strokeStyle = colorString(r0, g0, b0, 1);
         ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**(tier+i*treeData.tierSmoothness/10));
         ctx.beginPath();
         ctx.moveTo(xCounter*w, yCounter*h);
