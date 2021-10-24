@@ -6,8 +6,7 @@ mainCanvas.height = window.innerHeight*0.9;
 
 class TreeData{
     constructor(){
-        this.branchColor = colorString(Math.random(), Math.random(), Math.random(), 1);
-        this.leafColor = colorString(Math.random(), Math.random(), Math.random(), 1);
+        this.branchColor = [Math.random(), Math.random(), Math.random()];
         this.tiers = randomBetween(3, 8, 1);
         this.growth = randomBetween(2, 4, 1);
         this.angleVary = randomBetween(Math.PI/8, Math.PI/2, 0.01);
@@ -34,19 +33,33 @@ function colorString(r, g, b, a){
 }
 
 function generateButtonClicked(){
+    let light = [Math.random()/2+0.5, Math.random()/2+0.5, Math.random()/2+0.5];
     mainCTX.fillStyle = "#000000FF";
     mainCTX.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
-    let treeData = new TreeData();
-    drawTree(treeData, mainCTX, mainCanvas.width, mainCanvas.height);
+    let treeData0 = new TreeData();
+    let treeData1 = new TreeData();
+    let treeData2 = new TreeData();
+    let y = 0.4;
+    for (let i=0; i<randomBetween(3, 6, 1); i++) {
+        y += randomBetween(0, (1-y)/2.5, 0.01);
+        drawTree(treeData0, mainCTX, mainCanvas.width, mainCanvas.height, randomBetween(0, 1, 0.01), y, light);
+        y += randomBetween(0, (1-y)/2.5, 0.01);
+        drawTree(treeData1, mainCTX, mainCanvas.width, mainCanvas.height, randomBetween(0, 1, 0.01), y, light);
+        y += randomBetween(0, (1-y)/2.5, 0.01);
+        drawTree(treeData2, mainCTX, mainCanvas.width, mainCanvas.height, randomBetween(0, 1, 0.01), y, light);
+    }
 }
 generateButton.addEventListener("click", generateButtonClicked);
 
-function drawTree(treeData, ctx, w, h){
-    drawBranch(treeData, 0, Math.PI/-2, Math.PI/-2, 0.5, 0.7, ctx, w, h);
+function drawTree(treeData, ctx, w, h, x, y, light){
+    drawBranch(treeData, 0, Math.PI/-2, Math.PI/-2, x, y, ctx, w, h, y, light);
 }
 
-function drawBranch(treeData, tier, angle, targetAngle, x, y, ctx, w, h){
-    ctx.strokeStyle = treeData.branchColor;
+function drawBranch(treeData, tier, angle, targetAngle, x, y, ctx, w, h, trunkY, light){
+    let z = (trunkY*5-1)/4;
+    let a = 1.4-trunkY;
+    let b = trunkY-0.4;
+    ctx.strokeStyle = colorString(treeData.branchColor[0]*z*a+light[0]*b, treeData.branchColor[1]*z*a+light[1]*b, treeData.branchColor[2]*z*a+light[2]*b, 1);
     let xCounter = x;
     let yCounter = y;
     let currentAngle = angle;
@@ -70,7 +83,7 @@ function drawBranch(treeData, tier, angle, targetAngle, x, y, ctx, w, h){
             let newTargetAngle = randomBetween(currentAngle-treeData.angleVary, currentAngle+treeData.angleVary, 0.01);
             let branchBend = treeData.branchBend+randomBetween(-1*treeData.branchBendVary, treeData.branchBendVary, 0.01);
             let startingAngle = currentAngle+(newTargetAngle-currentAngle)*branchBend;
-            drawBranch(treeData, tier+1, startingAngle, newTargetAngle, xCounter, yCounter, ctx, w, h);
+            drawBranch(treeData, tier+1, startingAngle, newTargetAngle, xCounter, yCounter, ctx, w, h, trunkY, light);
         }
     }
 }
