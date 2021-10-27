@@ -18,6 +18,10 @@ class TreeData{
         this.tierSmoothness = Math.random();
         this.segmentExtend = randomBetween(5, 101, 1);
         this.branchColorVary = Math.random()*0.8;
+        this.branchSegments = randomBetween(3, 21, 1);
+        this.branchSegmentsVary = randomBetween(0, this.branchSegments/2, 1);
+        this.branchSegmentLengthVary = Math.random()*0.7;
+        this.branchLengthVary = Math.random()*0.7;
     }
 }
 
@@ -51,7 +55,7 @@ function generateButtonClicked(){
         m = mainCanvas.width;
         mp = mainCanvas.height/m;
     }
-    let light = [Math.random()/2+0.5, Math.random()/2+0.5, Math.random()/2+0.5];
+    let light = [randomBetween(0.7, 1, 0.01), randomBetween(0.7, 1, 0.01), randomBetween(0.7, 1, 0.01)];
     let treeDatas = [];
     for (let i=0; i<randomBetween(2, 6, 1); i++) {
         treeDatas.push(new TreeData());
@@ -87,6 +91,8 @@ function drawTree(treeData, ctx, m, x, y, tX, tY, trunkY, light){
 }
 
 function drawBranch(treeData, tier, angle, targetAngle, x, y, tX, tY, ctx, m, trunkY, light){
+    let bm = 1+randomBetween(-treeData.branchLengthVary, treeData.branchLengthVary, 0.01);
+    let s = treeData.branchSegments+randomBetween(-1*treeData.branchSegmentsVary, treeData.branchSegmentsVary, 1);
     let z = (trunkY*5-1)/4;
     let a = 1.4-trunkY;
     let b = trunkY-0.4;
@@ -94,21 +100,22 @@ function drawBranch(treeData, tier, angle, targetAngle, x, y, tX, tY, ctx, m, tr
     let yCounter = y;
     let currentAngle = angle;
     let lastWobble = 0;
-    for (let i=0; i<10; i++) {
+    for (let i=0; i<s; i++) {
+        let slm = 1+randomBetween(-treeData.branchSegmentLengthVary, treeData.branchSegmentLengthVary, 0.01);
         let r0 = (treeData.branchColor[0]*z*a+light[0]*b)*(1-Math.random()*treeData.branchColorVary);
         let g0 = treeData.branchColor[1]*z*a+light[1]*b*(1-Math.random()*treeData.branchColorVary);
         let b0 = treeData.branchColor[2]*z*a+light[2]*b*(1-Math.random()*treeData.branchColorVary);
         ctx.strokeStyle = colorString(r0, g0, b0, 1);
-        ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**(tier+i*treeData.tierSmoothness/10));
+        ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**(tier+i*treeData.tierSmoothness/s));
         ctx.beginPath();
         ctx.moveTo(xCounter*m+tX, yCounter*m+tY);
         let wobble = randomBetween(-1*treeData.branchWobble, treeData.branchWobble, 0.01);
-        currentAngle += ((targetAngle-angle)+wobble-lastWobble)/10;
+        currentAngle += ((targetAngle-angle)+wobble-lastWobble)/s;
         lastWobble = wobble;
-        xCounter += Math.cos(currentAngle)/treeData.tiers/20;
-        yCounter += Math.sin(currentAngle)/treeData.tiers/20;
-        let xExtend = xCounter+Math.cos(currentAngle)/treeData.tiers/treeData.segmentExtend;
-        let yExtend = yCounter+Math.sin(currentAngle)/treeData.tiers/treeData.segmentExtend;
+        xCounter += Math.cos(currentAngle)*slm*bm/treeData.tiers/s/2;
+        yCounter += Math.sin(currentAngle)*slm*bm/treeData.tiers/s/2;
+        let xExtend = xCounter+Math.cos(currentAngle)*slm*bm/treeData.tiers/treeData.segmentExtend;
+        let yExtend = yCounter+Math.sin(currentAngle)*slm*bm/treeData.tiers/treeData.segmentExtend;
         ctx.lineTo(xExtend*m+tX, yExtend*m+tY);
         ctx.stroke();
     }
