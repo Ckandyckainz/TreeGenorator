@@ -22,6 +22,10 @@ class TreeData{
         this.branchSegmentsVary = randomBetween(0, this.branchSegments/2, 1);
         this.branchSegmentLengthVary = Math.random()*0.7;
         this.branchLengthVary = Math.random()*0.7;
+        this.branchContinue = Math.random();
+        this.branchWaveSize = 0;
+        this.branchWaveLength = 0;
+        this.branchWaveVary = 0;
     }
 }
 
@@ -121,7 +125,16 @@ function drawBranch(treeData, tier, angle, targetAngle, x, y, tX, tY, ctx, m, tr
     }
     if (treeData.tiers > tier) {
         for (let i=0; i<randomBetween(treeData.growth-1, treeData.growth+1, 1); i++) {
-            let newTargetAngle = randomBetween(currentAngle-treeData.angleVary, currentAngle+treeData.angleVary, 0.01);
+            let branchContinue = false;
+            if (i == 0) {
+                if (Math.random() > treeData.branchContinue) {
+                    branchContinue = true;
+                }
+            }
+            let newTargetAngle = targetAngle;
+            if (!branchContinue) {
+                newTargetAngle = randomBetween(currentAngle-treeData.angleVary, currentAngle+treeData.angleVary, 0.01);
+            }
             let branchBend = treeData.branchBend+randomBetween(-1*treeData.branchBendVary, treeData.branchBendVary, 0.01);
             let startingAngle = currentAngle+(newTargetAngle-currentAngle)*branchBend;
             drawBranch(treeData, tier+1, startingAngle, newTargetAngle, xCounter, yCounter, tX, tY, ctx, m, trunkY, light);
