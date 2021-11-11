@@ -27,6 +27,7 @@ class TreeData{
         this.branchWaveLength = Math.random()*1.5;
         this.branchWaveSizeVary = Math.random()/2;
         this.branchWaveLengthVary = Math.random()/2;
+        this.ld = new LeafData();
     }
 }
 
@@ -35,6 +36,30 @@ class Tree{
         this.treeData = treeData;
         this.x = x;
         this.y = y;
+    }
+}
+
+class LeafData{
+    constructor(){
+        this.leafColor = [Math.random(), Math.random(), Math.random()]
+        this.leafColorVary = Math.random();
+        this.leafClumpColorVary = Math.random();
+        this.leafClumpSpread = Math.random();
+        this.leafClumpAmount = Math.random()*4+1;
+        this.leafClumpAngleVary = randomBetween(Math.PI/8, Math.PI/2, 0.01);
+        this.leafAngleVary = randomBetween(Math.PI/16, Math.PI/4, 0.01);
+        this.leafSize = randomBetween(0.5, 1.5, 0.01);
+        this.leafSizeVary = randomBetween(0.5, 1.5, 0.01);
+        this.leafClumpSizeVary = randomBetween(0.5, 1.5, 0.01);
+        this.leafPoints = randomBetween(1, 9, 1);
+        this.startInnerD = randomBetween(5, 15, 0.01);
+        this.startInnerDVary = randomBetween(0.5, 1.5, 0.01);
+        this.innerOuterD = randomBetween(5, 15, 0.01);
+        this.innerOuterDVary = randomBetween(0.5, 1.5, 0.01);
+        this.innerSpreadAngle = randomBetween(Math.PI/4, Math.PI*1.5, 0.01);
+        this.innerSpreadAngleVary = randomBetween(0.5, 1.5, 0.01);
+        this.innerAngleVary = Math.random()*this.innerSpreadAngle/this.leafPoints/2;
+        this.outerAngleVary = Math.random()*this.innerSpreadAngle/this.leafPoints/2;
     }
 }
 
@@ -48,6 +73,14 @@ function colorString(r, g, b, a){
     b = Math.floor(b*255)*256;
     a = Math.floor(a*255);
     return "#"+(r+g+b+a).toString(16).padStart(8, "0");
+}
+
+function drawTriangle(ctx, x1, y1, x2, y2, x3, y3){
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x3, y3);
+    ctx.fill();
 }
 
 function generateButtonClicked(){
@@ -95,9 +128,9 @@ function drawTree(treeData, ctx, m, x, y, tX, tY, trunkY, light){
     drawBranch(treeData, 0, Math.PI/-2, Math.PI/-2, x, y, tX, tY, ctx, m, trunkY, light, 0);
 }
 
-function drawBranch(treeData, tier, angle, targetAngle, x, y, tX, tY, ctx, m, trunkY, light, waveCounter){
-    let bm = 1+randomBetween(-treeData.branchLengthVary, treeData.branchLengthVary, 0.01);
-    let s = treeData.branchSegments+randomBetween(-1*treeData.branchSegmentsVary, treeData.branchSegmentsVary, 1);
+function drawBranch(td, tier, angle, targetAngle, x, y, tX, tY, ctx, m, trunkY, light, waveCounter){
+    let bm = 1+randomBetween(-td.branchLengthVary, td.branchLengthVary, 0.01);
+    let s = td.branchSegments+randomBetween(-1*td.branchSegmentsVary, td.branchSegmentsVary, 1);
     let z = (trunkY*5-1)/4;
     let a = 1.4-trunkY;
     let b = trunkY-0.4;
@@ -113,42 +146,65 @@ function drawBranch(treeData, tier, angle, targetAngle, x, y, tX, tY, ctx, m, tr
     for (let i=0; i<s; i++) {
         oldBwsm = bwsm;
         oldBwlm = bwlm;
-        bwsm = 1+Math.random()*treeData.branchWaveSizeVary;
-        bwlm = 1+Math.random()*treeData.branchWaveLengthVary;
-        let slm = 1+randomBetween(-treeData.branchSegmentLengthVary, treeData.branchSegmentLengthVary, 0.01);
-        let r0 = (treeData.branchColor[0]*z*a+light[0]*b)*(1-Math.random()*treeData.branchColorVary);
-        let g0 = treeData.branchColor[1]*z*a+light[1]*b*(1-Math.random()*treeData.branchColorVary);
-        let b0 = treeData.branchColor[2]*z*a+light[2]*b*(1-Math.random()*treeData.branchColorVary);
+        bwsm = 1+Math.random()*td.branchWaveSizeVary;
+        bwlm = 1+Math.random()*td.branchWaveLengthVary;
+        let slm = 1+randomBetween(-td.branchSegmentLengthVary, td.branchSegmentLengthVary, 0.01);
+        let r0 = (td.branchColor[0]*z*a+light[0]*b)*(1-Math.random()*td.branchColorVary);
+        let g0 = td.branchColor[1]*z*a+light[1]*b*(1-Math.random()*td.branchColorVary);
+        let b0 = td.branchColor[2]*z*a+light[2]*b*(1-Math.random()*td.branchColorVary);
         ctx.strokeStyle = colorString(r0, g0, b0, 1);
-        ctx.lineWidth = treeData.branchThickness/(treeData.branchThicknessProportions**(tier+i*treeData.tierSmoothness/s));
+        ctx.lineWidth = td.branchThickness/(td.branchThicknessProportions**(tier+i*td.tierSmoothness/s));
         ctx.beginPath();
-        ctx.moveTo(xCounter*m+tX+Math.sin(wave*treeData.branchWaveLength*oldBwlm)*treeData.branchWaveSize*oldBwsm, yCounter*m+tY);
-        let wobble = randomBetween(-1*treeData.branchWobble, treeData.branchWobble, 0.01);
+        ctx.moveTo(xCounter*m+tX+Math.sin(wave*td.branchWaveLength*oldBwlm)*td.branchWaveSize*oldBwsm, yCounter*m+tY);
+        let wobble = randomBetween(-1*td.branchWobble, td.branchWobble, 0.01);
         wave ++;
         currentAngle += ((targetAngle-angle)+wobble-lastWobble)/s;
         lastWobble = wobble;
-        xCounter += Math.cos(currentAngle)*slm*bm/treeData.tiers/s/2;
-        yCounter += Math.sin(currentAngle)*slm*bm/treeData.tiers/s/2;
-        let xExtend = xCounter+Math.cos(currentAngle)*slm*bm/treeData.tiers/treeData.segmentExtend;
-        let yExtend = yCounter+Math.sin(currentAngle)*slm*bm/treeData.tiers/treeData.segmentExtend;
-        ctx.lineTo(xExtend*m+tX+Math.sin(wave*treeData.branchWaveLength*bwlm)*treeData.branchWaveSize*bwsm, yExtend*m+tY);
+        xCounter += Math.cos(currentAngle)*slm*bm/td.tiers/s/2;
+        yCounter += Math.sin(currentAngle)*slm*bm/td.tiers/s/2;
+        let xExtend = xCounter+Math.cos(currentAngle)*slm*bm/td.tiers/td.segmentExtend;
+        let yExtend = yCounter+Math.sin(currentAngle)*slm*bm/td.tiers/td.segmentExtend;
+        ctx.lineTo(xExtend*m+tX+Math.sin(wave*td.branchWaveLength*bwlm)*td.branchWaveSize*bwsm, yExtend*m+tY);
         ctx.stroke();
+        drawLeafClump(ctx, td.ld, m, xCounter, yCounter, tX, tY, trunkY, light);
     }
-    if (treeData.tiers > tier) {
-        for (let i=0; i<randomBetween(treeData.growth-1, treeData.growth+1, 1); i++) {
+    if (td.tiers > tier) {
+        for (let i=0; i<randomBetween(td.growth-1, td.growth+1, 1); i++) {
             let branchContinue = false;
             if (i == 0) {
-                if (Math.random() > treeData.branchContinue) {
+                if (Math.random() > td.branchContinue) {
                     branchContinue = true;
                 }
             }
             let newTargetAngle = targetAngle;
             if (!branchContinue) {
-                newTargetAngle = randomBetween(currentAngle-treeData.angleVary, currentAngle+treeData.angleVary, 0.01);
+                newTargetAngle = randomBetween(currentAngle-td.angleVary, currentAngle+td.angleVary, 0.01);
             }
-            let branchBend = treeData.branchBend+randomBetween(-1*treeData.branchBendVary, treeData.branchBendVary, 0.01);
+            let branchBend = td.branchBend+randomBetween(-1*td.branchBendVary, td.branchBendVary, 0.01);
             let startingAngle = currentAngle+(newTargetAngle-currentAngle)*branchBend;
-            drawBranch(treeData, tier+1, startingAngle, newTargetAngle, xCounter, yCounter, tX, tY, ctx, m, trunkY, light, wave);
+            drawBranch(td, tier+1, startingAngle, newTargetAngle, xCounter, yCounter, tX, tY, ctx, m, trunkY, light, wave);
         }
     }
+}
+
+function drawLeafClump(ctx, ld, m, x, y, tX, tY, trunkY, light){
+    let clumpColor = Math.random()*ld.leafClumpColorVary;
+    let z = (trunkY*5-1)/4;
+    let a = 1.4-trunkY;
+    let b = trunkY-0.4;
+    let r0 = (ld.leafColor[0]*z*a+light[0]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+    let g0 = (ld.leafColor[1]*z*a+light[1]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+    let b0 = (ld.leafColor[2]*z*a+light[2]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+    ctx.fillStyle = colorString(r0, g0, b0, 1);
+    ctx.beginPath();
+    ctx.moveTo(x*m+tX, y*m+tY);
+    for (let i=0; i<ld.leafPoints; i++) {
+        let toX = x*m+Math.cos(ld.innerSpreadAngle*i/ld.leafPoints)*ld.startInnerD;
+        let toY = y*m+Math.sin(ld.innerSpreadAngle*i/ld.leafPoints)*ld.startInnerD;
+        ctx.lineTo(toX+tX, toY+tY);
+        toX = x*m+Math.cos(ld.innerSpreadAngle*(i+0.5)/ld.leafPoints)*(ld.startInnerD+ld.startOuterD);
+        toY = y*m+Math.sin(ld.innerSpreadAngle*(i+0.5)/ld.leafPoints)*(ld.startInnerD+ld.startOuterD);
+        ctx.lineTo(toX+tX, toY+tY);
+    }
+    ctx.fill();
 }
