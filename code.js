@@ -41,7 +41,9 @@ class Tree{
 
 class LeafData{
     constructor(){
-        this.leafColor = [Math.random(), Math.random(), Math.random()]
+        this.leafColor = [Math.random(), Math.random(), Math.random(), Math.random()*0.5+0.5];
+        this.leafTransparencyVary = Math.random()*0.6;
+        this.leafClumpTransparencyVary = Math.random()*0.6;
         this.leafColorVary = ((Math.random()*4)**0.5)/2;
         this.leafClumpColorVary = ((Math.random()*4)**0.5)/2;
         this.leafClumpSpread = ((Math.random()*9)**0.5)/3;
@@ -194,6 +196,7 @@ function drawLeafClump(ctx, ld, m, x, y, tX, tY, trunkY, light, angle){
     let clumpColor = Math.random()*ld.leafClumpColorVary;
     let clumpAngleVary = randomBetween(-1*ld.leafClumpAngleVary, ld.leafClumpAngleVary, 0.01);
     let clumpSizeVary = randomBetween(1-ld.leafClumpSizeVary, 1+ld.leafClumpSizeVary, 0.01);
+    let clumpTransparencyVary = Math.random()*ld.leafClumpTransparencyVary;
     let z = (trunkY*5-1)/4;
     let a = 1.4-trunkY;
     let b = trunkY-0.4;
@@ -203,12 +206,13 @@ function drawLeafClump(ctx, ld, m, x, y, tX, tY, trunkY, light, angle){
         let r0 = (ld.leafColor[0]*z*a+light[0]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
         let g0 = (ld.leafColor[1]*z*a+light[1]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
         let b0 = (ld.leafColor[2]*z*a+light[2]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+        let a0 = ld.leafColor[3]-clumpTransparencyVary*Math.random()*ld.leafTransparencyVary;
         let point1 = {
             x: x*m+Math.cos(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tX,
             y: y*m+Math.sin(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tY,
             angle: ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am
         };
-        ctx.fillStyle = colorString(r0, g0, b0, 1);
+        ctx.fillStyle = colorString(r0, g0, b0, a0);
         for (let j=0; j<ld.leafPoints; j++) {
             let point2 = {
                 x: x*m+Math.cos(ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tX,
