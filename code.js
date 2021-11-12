@@ -42,19 +42,18 @@ class Tree{
 class LeafData{
     constructor(){
         this.leafColor = [Math.random(), Math.random(), Math.random()]
-        this.leafColorVary = Math.random();
-        this.leafClumpColorVary = Math.random();
+        this.leafColorVary = ((Math.random()*4)**0.5)/2;
+        this.leafClumpColorVary = ((Math.random()*4)**0.5)/2;
         this.leafClumpSpread = ((Math.random()*9)**0.5)/3;
         this.leafClumpAmount = Math.random()*4+1;
         this.leafClumpAngleVary = randomBetween(Math.PI/8, Math.PI/2, 0.01);
-        this.leafAngleVary = randomBetween(Math.PI/16, Math.PI/4, 0.01);
-        this.leafSize = randomBetween(0.5, 1.5, 0.01);
-        this.leafSizeVary = randomBetween(0.5, 1.5, 0.01);
-        this.leafClumpSizeVary = randomBetween(0.5, 1.5, 0.01);
+        this.leafAngleVary = randomBetween(Math.PI/8, Math.PI/2, 0.01);
+        this.leafSizeVary = Math.random()*0.5;
+        this.leafClumpSizeVary = Math.random()*0.5;
         this.leafPoints = randomBetween(1, 9, 1);
-        this.startInnerD = randomBetween(5, 15, 0.01);
+        this.startInnerD = randomBetween(3, 9, 0.01);
         this.startInnerDVary = randomBetween(0.5, 1.5, 0.01);
-        this.innerOuterD = randomBetween(5, 15, 0.01);
+        this.innerOuterD = randomBetween(3, 9, 0.01);
         this.innerOuterDVary = randomBetween(0.5, 1.5, 0.01);
         this.innerSpreadAngle = randomBetween(Math.PI/4, Math.PI*1.5, 0.01);
         this.innerSpreadAngleVary = randomBetween(0.5, 1.5, 0.01);
@@ -167,7 +166,9 @@ function drawBranch(td, tier, angle, targetAngle, x, y, tX, tY, ctx, m, trunkY, 
         ctx.lineTo(xExtend*m+tX+Math.sin(wave*td.branchWaveLength*bwlm)*td.branchWaveSize*bwsm, yExtend*m+tY);
         ctx.stroke();
         if (Math.random()*tier/td.tiers > td.ld.leafClumpSpread) {
-            drawLeafClump(ctx, td.ld, m, xCounter, yCounter, tX, tY, trunkY, light, currentAngle);
+            if (Math.random() < 1/2/td.ld.leafClumpAmount) {
+                drawLeafClump(ctx, td.ld, m, xCounter, yCounter, tX, tY, trunkY, light, currentAngle);
+            }
         }
     }
     if (td.tiers > tier) {
@@ -191,36 +192,42 @@ function drawBranch(td, tier, angle, targetAngle, x, y, tX, tY, ctx, m, trunkY, 
 
 function drawLeafClump(ctx, ld, m, x, y, tX, tY, trunkY, light, angle){
     let clumpColor = Math.random()*ld.leafClumpColorVary;
+    let clumpAngleVary = randomBetween(-1*ld.leafClumpAngleVary, ld.leafClumpAngleVary, 0.01);
+    let clumpSizeVary = randomBetween(1-ld.leafClumpSizeVary, 1+ld.leafClumpSizeVary, 0.01);
     let z = (trunkY*5-1)/4;
     let a = 1.4-trunkY;
     let b = trunkY-0.4;
-    let r0 = (ld.leafColor[0]*z*a+light[0]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
-    let g0 = (ld.leafColor[1]*z*a+light[1]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
-    let b0 = (ld.leafColor[2]*z*a+light[2]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
-    let point1 = {
-        x: x*m+Math.cos(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle)*ld.startInnerD+tX,
-        y: y*m+Math.sin(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle)*ld.startInnerD+tY,
-        angle: ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle
-    };
-    ctx.fillStyle = colorString(r0, g0, b0, 1);
-    for (let j=0; j<ld.leafPoints; j++) {
-        let point2 = {
-            x: x*m+Math.cos(ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle)*ld.startInnerD+tX,
-            y: y*m+Math.sin(ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle)*ld.startInnerD+tY,
-            angle: ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+angle
+    for (let i=0; i<ld.leafClumpAmount; i++) {
+        let am = angle+clumpAngleVary+randomBetween(-1*ld.leafAngleVary, ld.leafAngleVary, 0.01);
+        let sm = clumpSizeVary+randomBetween(1-ld.leafSizeVary, 1+ld.leafSizeVary, 0.01);
+        let r0 = (ld.leafColor[0]*z*a+light[0]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+        let g0 = (ld.leafColor[1]*z*a+light[1]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+        let b0 = (ld.leafColor[2]*z*a+light[2]*b)*(1-Math.random()*ld.leafColorVary*clumpColor);
+        let point1 = {
+            x: x*m+Math.cos(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tX,
+            y: y*m+Math.sin(ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tY,
+            angle: ld.innerSpreadAngle*0/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am
         };
-        ctx.beginPath();
-        ctx.moveTo(x*m+tX, y*m+tY);
-        ctx.lineTo(point1.x, point1.y);
-        ctx.lineTo(point2.x, point2.y);
-        ctx.fill();
-        toX = x*m+Math.cos((point1.angle+point2.angle)/2)*(ld.startInnerD+ld.innerOuterD)+tX;
-        toY = y*m+Math.sin((point1.angle+point2.angle)/2)*(ld.startInnerD+ld.innerOuterD)+tY;
-        ctx.beginPath();
-        ctx.moveTo(toX, toY);
-        ctx.lineTo(point1.x, point1.y);
-        ctx.lineTo(point2.x, point2.y);
-        ctx.fill();
-        point1 = point2;
+        ctx.fillStyle = colorString(r0, g0, b0, 1);
+        for (let j=0; j<ld.leafPoints; j++) {
+            let point2 = {
+                x: x*m+Math.cos(ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tX,
+                y: y*m+Math.sin(ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am)*ld.startInnerD*sm+tY,
+                angle: ld.innerSpreadAngle*(j+1)/(ld.leafPoints+1)-ld.innerSpreadAngle/2+am
+            };
+            ctx.beginPath();
+            ctx.moveTo(x*m+tX, y*m+tY);
+            ctx.lineTo(point1.x, point1.y);
+            ctx.lineTo(point2.x, point2.y);
+            ctx.fill();
+            toX = x*m+Math.cos((point1.angle+point2.angle)/2)*(ld.startInnerD+ld.innerOuterD)*sm+tX;
+            toY = y*m+Math.sin((point1.angle+point2.angle)/2)*(ld.startInnerD+ld.innerOuterD)*sm+tY;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(point1.x, point1.y);
+            ctx.lineTo(point2.x, point2.y);
+            ctx.fill();
+            point1 = point2;
+        }
     }
 }
